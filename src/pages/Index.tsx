@@ -41,7 +41,7 @@ const Index = () => {
             <Card className="shadow-xl border-2 border-border/60">
               <CardContent className="p-6 space-y-5">
                 <div className="flex items-center gap-2 text-lg font-display font-semibold">
-                  <span>👋</span> Welcome to Dimless IntervoAI
+                  <span>👋</span> Welcome to Dmless IntervoAI
                 </div>
                 <p className="text-sm text-muted-foreground">Get started with your interview prep journey</p>
 

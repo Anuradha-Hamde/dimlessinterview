@@ -6,7 +6,7 @@ const Footer = () => (
       <div>
         <div className="flex items-center gap-2 mb-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-display font-bold">D</div>
-          <span className="font-display text-lg font-bold">Dimless <span className="text-primary">IntervoAI</span></span>
+          <span className="font-display text-lg font-bold">Dmless <span className="text-primary">IntervoAI</span></span>
         </div>
         <p className="text-sm text-muted-foreground">AI-powered interview practice for students. Build confidence, crack interviews.</p>
       </div>
@@ -37,7 +37,7 @@ const Footer = () => (
       </div>
     </div>
     <div className="container mt-8 border-t pt-6 text-center text-sm text-muted-foreground">
-      © 2026 Dimless IntervoAI. All rights reserved.
+      © 2026 Dmless IntervoAI. All rights reserved.
     </div>
   </footer>
 );

@@ -1,6 +1,6 @@
 
 
-# Dimless IntervoAI — Implementation Plan
+# Dmless IntervoAI — Implementation Plan
 
 ## Overview
 AI Interview Practice, Custom Tests & Company-Wise Preparation platform for students. Frontend-only with mock data and placeholders. Modern SaaS UI with white/blue-teal theme.
@@ -13,7 +13,7 @@ AI Interview Practice, Custom Tests & Company-Wise Preparation platform for stud
 - Configure routing for all pages
 
 ## Phase 2: Public Landing Page
-- **Navbar** with logo "Dimless IntervoAI", menu links (Features, How It Works, Custom Tests, Company Prep), Login & Sign Up buttons
+- **Navbar** with logo "Dmless IntervoAI", menu links (Features, How It Works, Custom Tests, Company Prep), Login & Sign Up buttons
 - **Hero Section** with badge, heading "Crack Interviews with Smart AI Practice", subtext, and CTAs
 - **New User Dashboard Preview** on the right side showing onboarding cards (Practice Interview, Create Custom Test, Company-Wise Preparation)
 - Social proof line: "Trusted by students preparing for their first interviews"
