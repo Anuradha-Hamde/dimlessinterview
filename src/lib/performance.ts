@@ -5,7 +5,7 @@ export interface PerformanceData {
   interviewsCompleted: number;
   testsCompleted: number;
   averageAccuracy: number;
-  difficultyLevel: "easy" | "medium" | "hard";
+  difficultyLevel: "easy" | "medium" | "hard";b
   lastUpdated: string;
 }
 
