@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -52,9 +52,10 @@ type Phase = "config" | "quiz" | "done";
 const Interview = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [phase, setPhase] = useState<Phase>("config");
   const [interviewType, setInterviewType] = useState("Technical");
-  const [questionCount, setQuestionCount] = useState("5");
+  const [questionCount, setQuestionCount] = useState((location?.state?.questionCount as string) || "5");
   const [duration, setDuration] = useState("10");
   const [currentQ, setCurrentQ] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -68,6 +69,9 @@ const Interview = () => {
   const [language, setLanguage] = useState("python");
   const [codeOutput, setCodeOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  
+  // Slice questions based on user input
+  const filteredQuestions = mockQuestions.slice(0, Math.min(parseInt(questionCount) || 5, mockQuestions.length));
 
   useEffect(() => { if (!user) navigate("/login"); }, [user, navigate]);
 
@@ -86,7 +90,7 @@ const Interview = () => {
   };
 
   const submitAnswer = () => {
-    const currentQuestion = mockQuestions[currentQ];
+    const currentQuestion = filteredQuestions[currentQ];
     if (currentQuestion.type === "mcq") {
       const isCorrect = !useCustom && selected === currentQuestion.correct;
       if (isCorrect) setScore((s) => s + 1);
@@ -123,7 +127,7 @@ const Interview = () => {
   };
 
   const nextQuestion = () => {
-    if (currentQ + 1 >= mockQuestions.length) {
+    if (currentQ + 1 >= filteredQuestions.length) {
       setPhase("done");
       navigate("/results");
       return;
@@ -140,7 +144,7 @@ const Interview = () => {
   };
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-  const q = mockQuestions[currentQ];
+  const q = filteredQuestions[currentQ];
 
   if (!user) return null;
 
@@ -194,7 +198,7 @@ const Interview = () => {
     <div className="container max-w-2xl py-10 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">Question {currentQ + 1} of {mockQuestions.length}</div>
+        <div className="text-sm text-muted-foreground">Question {currentQ + 1} of {filteredQuestions.length}</div>
         <div className="flex items-center gap-2 text-sm font-medium">
           <Timer className="h-4 w-4 text-primary" /> {formatTime(timeLeft)}
         </div>

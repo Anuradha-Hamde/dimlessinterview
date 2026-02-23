@@ -26,6 +26,7 @@ const CustomTest = () => {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState("Medium");
   const [questionType, setQuestionType] = useState("MCQ");
+  const [questionCount, setQuestionCount] = useState("5");
 
   useEffect(() => { if (!user) navigate("/login"); }, [user, navigate]);
 
@@ -41,7 +42,7 @@ const CustomTest = () => {
 
   const handleGenerate = () => {
     // AI_CUSTOM_TEST_GENERATOR_PLACEHOLDER
-    navigate("/interview");
+    navigate("/interview", { state: { questionCount } });
   };
 
   if (!user) return null;
@@ -111,6 +112,10 @@ const CustomTest = () => {
                   <SelectItem value="Hard">Hard</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Number of Questions (5–30)</Label>
+              <Input type="number" min={5} max={30} value={questionCount} onChange={(e) => setQuestionCount(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Question Type</Label>
