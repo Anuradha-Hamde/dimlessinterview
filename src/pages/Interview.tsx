@@ -10,6 +10,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, Timer, BookOpen, CheckCircle2, AlertCircle, ChevronRight, Play } from "lucide-react";
+import { getQuestionTypesFromInterviewType } from "@/lib/question-generator";
 
 interface MCQQuestion {
   type: "mcq";
@@ -95,8 +96,37 @@ const Interview = () => {
   const [codeOutput, setCodeOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   
-  // Slice questions based on user input
-  const filteredQuestions = mockQuestions.slice(0, Math.min(parseInt(questionCount) || 5, mockQuestions.length));
+  // Check if coming from CustomTest with selected topics
+  const fromCustomTest = (location?.state as any)?.fromCustomTest || false;
+  const selectedTopicsFromState = (location?.state as any)?.selectedTopics || [];
+  
+  // Filter questions based on source
+  let filteredQuestions: Question[];
+  if (fromCustomTest && selectedTopicsFromState.length > 0) {
+    // Filter by selected topics from CustomTest
+    const selectedTopicSet = new Set<string>();
+    selectedTopicsFromState.forEach((topic: string) => {
+      // Map topic to question topics
+      const topicMappings: Record<string, string[]> = {
+        "C": ["DSA", "OOP"], "C++": ["DSA", "OOP"], "Java": ["DSA", "OOP"], "Python": ["DSA", "OOP"],
+        "HTML": ["Web Development"], "CSS": ["Web Development"], "JavaScript": ["Web Development"], "React": ["Web Development"],
+        "Node.js": ["Web Development"], "Spring Boot": ["OOP"], "Django": ["Web Development"],
+        "MySQL": ["Databases"], "MongoDB": ["Databases"],
+        "DSA": ["DSA"], "OOP": ["OOP"], "DBMS": ["Databases"], "OS": ["Data Structures"], "CN": ["Data Structures"],
+        "HR": ["Communication"], "Communication": ["Communication"], "Behavioral": ["Communication"],
+      };
+      const mapped = topicMappings[topic] || [];
+      mapped.forEach((t) => selectedTopicSet.add(t));
+    });
+    const topicsToFilterBy = Array.from(selectedTopicSet);
+    const topicFilteredQuestions = mockQuestions.filter((q) => topicsToFilterBy.includes(q.topic));
+    filteredQuestions = topicFilteredQuestions.slice(0, Math.min(parseInt(questionCount) || 5, topicFilteredQuestions.length));
+  } else {
+    // Filter by interview type
+    const questionTypesForInterview = getQuestionTypesFromInterviewType(interviewType);
+    const typeFilteredQuestions = mockQuestions.filter((q) => questionTypesForInterview.includes(q.topic));
+    filteredQuestions = typeFilteredQuestions.slice(0, Math.min(parseInt(questionCount) || 5, typeFilteredQuestions.length));
+  }
 
   useEffect(() => { if (!user) navigate("/login"); }, [user, navigate]);
 
