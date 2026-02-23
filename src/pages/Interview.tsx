@@ -34,7 +34,6 @@ const Interview = () => {
   const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>("config");
   const [interviewType, setInterviewType] = useState("Technical");
-  const [difficulty, setDifficulty] = useState("Medium");
   const [questionCount, setQuestionCount] = useState("5");
   const [duration, setDuration] = useState("10");
   const [currentQ, setCurrentQ] = useState(0);
@@ -119,17 +118,6 @@ const Interview = () => {
             <div className="space-y-2">
               <Label>Number of Questions</Label>
               <Input type="number" min={5} max={30} value={questionCount} onChange={(e) => setQuestionCount(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Difficulty</Label>
-              <Select value={difficulty} onValueChange={setDifficulty}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Easy">Easy</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="Hard">Hard</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <Button className="w-full gap-2" onClick={startQuiz}>
               Start AI Interview <ArrowRight className="h-4 w-4" />
