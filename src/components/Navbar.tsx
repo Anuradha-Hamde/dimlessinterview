@@ -18,8 +18,8 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-display font-bold text-lg">D</div>
-          <span className="font-display text-xl font-bold text-foreground">Dimless <span className="text-primary">IntervoAI</span></span>
+          <img src="/logo.svg" alt="Dmless IntervoAI" className="h-9 w-9 rounded-full object-cover" />
+          <span className="font-display text-xl font-bold text-foreground">Dmless <span className="text-primary">IntervoAI</span></span>
         </Link>
 
         {/* Desktop nav */}
