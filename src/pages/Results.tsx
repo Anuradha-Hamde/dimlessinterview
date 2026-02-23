@@ -1,41 +1,80 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowRight, TrendingUp, AlertTriangle, CheckCircle2, BookOpen } from "lucide-react";
+import { ArrowRight, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
 
-const mockResults = {
-  overall: 72,
-  topics: [
-    { name: "Data Structures", score: 80, status: "strong" },
-    { name: "OOP", score: 60, status: "weak" },
-    { name: "Databases", score: 90, status: "strong" },
-    { name: "DSA", score: 55, status: "weak" },
-    { name: "Web Development", score: 75, status: "average" },
-  ],
-  faqs: [
-    { question: "Explain OOP concepts", companies: ["TCS", "Infosys", "Wipro"] },
-    { question: "Difference between SQL and NoSQL", companies: ["Amazon", "Cognizant"] },
-    { question: "What is polymorphism?", companies: ["TCS", "Accenture"] },
-    { question: "Explain binary search", companies: ["Google", "Amazon", "Microsoft"] },
-  ],
-  companyAnalysis: [
-    { company: "TCS", topics: "OOP, DBMS, Arrays" },
-    { company: "Amazon", topics: "DSA, System Design, Trees" },
-    { company: "Infosys", topics: "OOP, SQL, Aptitude" },
-    { company: "Google", topics: "DSA, Graphs, Dynamic Programming" },
-  ],
-};
+interface AttemptData {
+  interviewType: string;
+  totalQuestions: number;
+  score: number;
+  accuracy: number;
+  topicScores: Record<string, { correct: number; total: number }>;
+  questions: Array<{ q: string; topic: string; type: string }>;
+  timestamp: string;
+}
 
 const Results = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [lastAttempt, setLastAttempt] = useState<AttemptData | null>(null);
+  const [topicPerformance, setTopicPerformance] = useState<Array<{ name: string; score: number; status: string; count: number }>>([]);
 
-  useEffect(() => { if (!user) navigate("/login"); }, [user, navigate]);
-  if (!user) return null;
+  useEffect(() => {
+    if (!user) navigate("/login");
+  }, [user, navigate]);
+
+  useEffect(() => {
+    // Fetch the latest attempt from localStorage
+    try {
+      const attempts = JSON.parse(localStorage.getItem("interview_attempts") || "[]");
+      if (attempts.length > 0) {
+        const latest = attempts[attempts.length - 1];
+        setLastAttempt(latest);
+
+        // Calculate topic-wise performance
+        const topicMap: Record<string, { correct: number; total: number }> = {};
+        
+        // Count questions by topic
+        latest.questions.forEach((q: any) => {
+          if (!topicMap[q.topic]) {
+            topicMap[q.topic] = { correct: 0, total: 0 };
+          }
+          topicMap[q.topic].total += 1;
+        });
+
+        // Estimate correct answers based on overall accuracy
+        const totalQuestions = latest.totalQuestions;
+        const correctAnswers = latest.score;
+        
+        // Distribute correct answers proportionally across topics
+        Object.keys(topicMap).forEach((topic) => {
+          const topicPercentage = topicMap[topic].total / totalQuestions;
+          topicMap[topic].correct = Math.round(correctAnswers * topicPercentage);
+        });
+
+        // Convert to display format
+        const topicData = Object.entries(topicMap).map(([name, data]) => ({
+          name,
+          score: data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0,
+          status: Math.round((data.correct / data.total) * 100) >= 70 ? "strong" : Math.round((data.correct / data.total) * 100) >= 50 ? "average" : "weak",
+          count: data.total,
+        }));
+
+        setTopicPerformance(topicData);
+      }
+    } catch (e) {
+      console.error("Error fetching attempt data:", e);
+    }
+  }, []);
+
+  if (!user || !lastAttempt) return (
+    <div className="container max-w-4xl py-10">
+      <p className="text-muted-foreground">Loading results...</p>
+    </div>
+  );
 
   return (
     <div className="container max-w-4xl py-10 space-y-8">
@@ -46,9 +85,12 @@ const Results = () => {
         <CardContent className="p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl font-semibold">Performance Summary</h2>
-            <div className="text-3xl font-display font-bold text-primary">{mockResults.overall}%</div>
+            <div className="text-3xl font-display font-bold text-primary">{lastAttempt.accuracy}%</div>
           </div>
-          <Progress value={mockResults.overall} className="h-3" />
+          <Progress value={lastAttempt.accuracy} className="h-3" />
+          <div className="text-sm text-muted-foreground pt-2">
+            Score: {lastAttempt.score} out of {lastAttempt.totalQuestions} questions correct
+          </div>
         </CardContent>
       </Card>
 
@@ -56,87 +98,53 @@ const Results = () => {
       <Card>
         <CardHeader><CardTitle>Topic-Wise Performance</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          {mockResults.topics.map((t) => (
-            <div key={t.name} className="flex items-center gap-3">
-              {t.status === "strong" ? <CheckCircle2 className="h-5 w-5 text-success" /> : t.status === "weak" ? <AlertTriangle className="h-5 w-5 text-warning" /> : <TrendingUp className="h-5 w-5 text-primary" />}
-              <span className="w-40 text-sm font-medium">{t.name}</span>
-              <Progress value={t.score} className="h-2 flex-1" />
-              <span className="text-sm text-muted-foreground w-10 text-right">{t.score}%</span>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* FAQs */}
-      <Card>
-        <CardHeader><CardTitle>Frequently Asked Questions (Company-Wise)</CardTitle></CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2">
-          {mockResults.faqs.map((f, i) => (
-            <div key={i} className="rounded-lg border p-3 space-y-2">
-              <p className="text-sm font-medium">"{f.question}"</p>
-              <div className="flex flex-wrap gap-1">
-                {f.companies.map((c) => <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>)}
+          {topicPerformance.length > 0 ? (
+            topicPerformance.map((t) => (
+              <div key={t.name} className="flex items-center gap-3">
+                {t.status === "strong" ? <CheckCircle2 className="h-5 w-5 text-success" /> : t.status === "weak" ? <AlertTriangle className="h-5 w-5 text-warning" /> : <TrendingUp className="h-5 w-5 text-primary" />}
+                <span className="w-40 text-sm font-medium">{t.name}</span>
+                <Progress value={t.score} className="h-2 flex-1" />
+                <span className="text-sm text-muted-foreground w-32 text-right">{t.score}% ({t.count} questions)</span>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-muted-foreground">No topic data available</p>
+          )}
         </CardContent>
       </Card>
 
-      {/* Company Analysis Table */}
+      {/* Stats */}
       <Card>
-        <CardHeader><CardTitle>Company-Wise Analysis</CardTitle></CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2 font-semibold">Company</th>
-                  <th className="text-left p-2 font-semibold">Frequently Asked Topics</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockResults.companyAnalysis.map((ca) => (
-                  <tr key={ca.company} className="border-b">
-                    <td className="p-2 font-medium">{ca.company}</td>
-                    <td className="p-2 text-muted-foreground">{ca.topics}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <CardHeader><CardTitle>Interview Details</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Interview Type</p>
+            <p className="font-semibold">{lastAttempt.interviewType}</p>
           </div>
-          <p className="text-xs text-muted-foreground mt-3 italic">COMPANY_QUESTION_ANALYTICS_PLACEHOLDER</p>
-        </CardContent>
-      </Card>
-
-      {/* Recommendations */}
-      <Card>
-        <CardHeader><CardTitle>Recommendations</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-start gap-2">
-            <BookOpen className="h-5 w-5 text-primary mt-0.5" />
-            <div>
-              <p className="text-sm font-medium">Topics to Revise</p>
-              <p className="text-sm text-muted-foreground">OOP, DSA — focus on weak areas</p>
-            </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Total Questions</p>
+            <p className="font-semibold">{lastAttempt.totalQuestions}</p>
           </div>
-          <div className="flex items-start gap-2">
-            <ArrowRight className="h-5 w-5 text-primary mt-0.5" />
-            <div>
-              <p className="text-sm font-medium">Suggested Next Test</p>
-              <p className="text-sm text-muted-foreground">Medium difficulty DSA test with 15 questions</p>
-            </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Correct Answers</p>
+            <p className="font-semibold">{lastAttempt.score}</p>
           </div>
-          <div className="flex items-start gap-2">
-            <TrendingUp className="h-5 w-5 text-primary mt-0.5" />
-            <div>
-              <p className="text-sm font-medium">Company Readiness</p>
-              <p className="text-sm text-muted-foreground">TCS: 70% ready • Amazon: 50% ready • Google: 45% ready</p>
-            </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Attempted On</p>
+            <p className="font-semibold text-sm">{new Date(lastAttempt.timestamp).toLocaleDateString()}</p>
           </div>
         </CardContent>
       </Card>
 
-      <Button className="gap-2" onClick={() => navigate("/dashboard")}>Back to Dashboard <ArrowRight className="h-4 w-4" /></Button>
+      {/* Action Buttons */}
+      <div className="flex gap-3">
+        <Button variant="outline" className="flex-1" onClick={() => navigate("/dashboard")}>
+          Back to Dashboard
+        </Button>
+        <Button className="flex-1 gap-2" onClick={() => navigate("/interview")}>
+          Practice Again <ArrowRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };

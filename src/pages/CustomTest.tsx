@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { ArrowRight, X } from "lucide-react";
-import { getQuestionTopicsFromSelection } from "@/lib/question-generator";
 
 const domainTopics: Record<string, string[]> = {
   Programming: ["C", "C++", "Java", "Python"],
@@ -43,13 +42,7 @@ const CustomTest = () => {
 
   const handleGenerate = () => {
     // AI_CUSTOM_TEST_GENERATOR_PLACEHOLDER
-    navigate("/interview", { 
-      state: { 
-        questionCount,
-        selectedTopics,
-        fromCustomTest: true 
-      } 
-    });
+    navigate("/interview", { state: { questionCount } });
   };
 
   if (!user) return null;
