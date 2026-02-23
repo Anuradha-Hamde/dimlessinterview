@@ -158,6 +158,9 @@ const Interview = () => {
                 <SelectContent>
                   <SelectItem value="Technical">Technical</SelectItem>
                   <SelectItem value="HR">HR</SelectItem>
+                  <SelectItem value="Both">Both (Technical + HR)</SelectItem>
+                  <SelectItem value="Product Manager">Product Manager</SelectItem>
+                  <SelectItem value="Senior">Senior Level</SelectItem>
                 </SelectContent>
               </Select>
             </div>
