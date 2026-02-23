@@ -4,9 +4,12 @@ import { useAuth } from "@/lib/auth-context";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { Timer, BookOpen, CheckCircle2, AlertCircle, ChevronRight, Play } from "lucide-react";
+import { ArrowRight, Timer, BookOpen, CheckCircle2, AlertCircle, ChevronRight, Play } from "lucide-react";
 
 interface MCQQuestion {
   type: "mcq";
@@ -44,12 +47,15 @@ const learningContent: Record<string, { explanation: string; keyPoints: string[]
   "Web Development": { explanation: "GET and PUT are idempotent HTTP methods — calling them multiple times produces the same result. POST is not idempotent.", keyPoints: ["GET: retrieve data", "POST: create new resource", "PUT: replace resource (idempotent)"], examples: "GET /users/1 always returns the same user.", mistakes: "Saying POST is idempotent.", tips: "Explain idempotency with a practical API example." },
 };
 
-type Phase = "quiz" | "done";
+type Phase = "config" | "quiz" | "done";
 
 const Interview = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [phase, setPhase] = useState<Phase>("quiz");
+  const [phase, setPhase] = useState<Phase>("config");
+  const [interviewType, setInterviewType] = useState("Technical");
+  const [questionCount, setQuestionCount] = useState("5");
+  const [duration, setDuration] = useState("10");
   const [currentQ, setCurrentQ] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [customAnswer, setCustomAnswer] = useState("");
@@ -57,7 +63,7 @@ const Interview = () => {
   const [answered, setAnswered] = useState(false);
   const [showLearn, setShowLearn] = useState(false);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes default
+  const [timeLeft, setTimeLeft] = useState(0);
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("python");
   const [codeOutput, setCodeOutput] = useState("");
@@ -66,10 +72,18 @@ const Interview = () => {
   useEffect(() => { if (!user) navigate("/login"); }, [user, navigate]);
 
   useEffect(() => {
+    if (phase !== "quiz") return;
     if (timeLeft <= 0) return;
     const t = setInterval(() => setTimeLeft((p) => p - 1), 1000);
     return () => clearInterval(t);
-  }, [timeLeft]);
+  }, [phase, timeLeft]);
+
+  const startQuiz = () => {
+    setPhase("quiz");
+    setCurrentQ(0);
+    setScore(0);
+    setTimeLeft(parseInt(duration) * 60);
+  };
 
   const submitAnswer = () => {
     const currentQuestion = mockQuestions[currentQ];
@@ -129,6 +143,51 @@ const Interview = () => {
   const q = mockQuestions[currentQ];
 
   if (!user) return null;
+
+  if (phase === "config") {
+    return (
+      <div className="container max-w-xl py-10 space-y-6">
+        <h1 className="font-display text-3xl font-bold">AI Interview Practice</h1>
+        <p className="text-muted-foreground">Configure your interview session</p>
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <div className="space-y-2">
+              <Label>Interview Type</Label>
+              <Select value={interviewType} onValueChange={setInterviewType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Technical">Technical</SelectItem>
+                  <SelectItem value="HR">HR</SelectItem>
+                  <SelectItem value="Both">Both (Technical + HR)</SelectItem>
+                  <SelectItem value="Product Manager">Product Manager</SelectItem>
+                  <SelectItem value="Senior">Senior Level</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Duration (minutes)</Label>
+              <Select value={duration} onValueChange={setDuration}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10 min</SelectItem>
+                  <SelectItem value="15">15 min</SelectItem>
+                  <SelectItem value="20">20 min (Custom)</SelectItem>
+                  <SelectItem value="30">30 min (Custom)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Number of Questions</Label>
+              <Input type="number" min={5} max={30} value={questionCount} onChange={(e) => setQuestionCount(e.target.value)} />
+            </div>
+            <Button className="w-full gap-2" onClick={startQuiz}>
+              Start AI Interview <ArrowRight className="h-4 w-4" />
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Quiz phase
   return (

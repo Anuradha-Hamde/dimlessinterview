@@ -25,8 +25,6 @@ const CustomTest = () => {
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState("Medium");
-  const [questionCount, setQuestionCount] = useState("10");
-  const [duration, setDuration] = useState("15");
   const [questionType, setQuestionType] = useState("MCQ");
 
   useEffect(() => { if (!user) navigate("/login"); }, [user, navigate]);
@@ -113,14 +111,6 @@ const CustomTest = () => {
                   <SelectItem value="Hard">Hard</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Number of Questions (5–30)</Label>
-              <Input type="number" min={5} max={30} value={questionCount} onChange={(e) => setQuestionCount(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Duration (5–60 min)</Label>
-              <Input type="number" min={5} max={60} value={duration} onChange={(e) => setDuration(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Question Type</Label>
